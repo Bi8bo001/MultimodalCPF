@@ -1,4 +1,3 @@
-````markdown
 # 🔮 MultiCPF: A Multimodal Crystal Property Prediction Framework
 
 MultiCPF is a modular, extensible framework for crystal property prediction via multimodal fusion of structural and textual representations. It is built upon **CrystalFormer** as the structure encoder and **MatSciBERT** for textual understanding, supporting various fusion mechanisms including sum, concat, gated, and cross-attention.
@@ -53,6 +52,4 @@ This project is released under the MIT License. See [LICENSE](./LICENSE) for det
 
 ## 🙋 Citation
 
-Coming soon (under submission).
-
-````
+Coming soon (under submission). If you use this work in your research, please consider citing us.
