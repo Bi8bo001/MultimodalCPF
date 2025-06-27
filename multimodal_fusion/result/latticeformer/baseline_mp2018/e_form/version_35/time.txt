@@ -1,0 +1,9 @@
+time-train: 25.4010
+time-val: 125.2713
+time-test: 164.1985
+val/loss	: nan
+val/e_form	: nan
+hp/min	: nan
+hp/val	: nan
+test/loss	: nan
+test/e_form	: nan

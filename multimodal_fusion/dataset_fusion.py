@@ -19,6 +19,8 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from dataloaders.common import generate_site_species_vector
 from torch.nn.utils.rnn import pad_sequence  ## cross_attn
 
+from multimodal_fusion.mask_strategy import apply_modal_dropout  ### mask training strategy
+
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DEFAULT_ROOT = os.path.join(BASE_DIR, "multimodal_fusion", "data", "crysmmnet_dataset", "mp_2018")
 
@@ -41,6 +43,7 @@ class FusionDatasetMP_Latticeformer(Dataset):
                  target_field='e_form',
                  freeze_text_encoder=True,
                  fusion_type="concat",  ## cross-attn的话需要对应修改数据传入的dim
+                 modal_dropout_prob=0.0,  ##
                  ):
         super().__init__()
 
@@ -129,6 +132,9 @@ class FusionDatasetMP_Latticeformer(Dataset):
                 pickle.dump(self.data_list, f)
         
         # self.data_list = self._build_data_list()
+
+        ### mask strategy
+        self.modal_dropout_prob = modal_dropout_prob
         
     def _load_description(self):
         # description 太长了超过字数了
@@ -242,9 +248,41 @@ class FusionDatasetMP_Latticeformer(Dataset):
             data_list.append(data)
         return data_list
 
+    '''    
     ### new __getitem__ 只根据id从list中抽取data
     def __getitem__(self, idx):
         return self.data_list[idx]
+    '''
+
+    def __getitem__(self, idx):
+        data = self.data_list[idx]
+
+        # Step 1: Decide whether to drop modalities (only for training)
+        if getattr(self, "target_split", "train") == "train" and self.modal_dropout_prob > 0:
+            use_struct_mask, use_text_mask = apply_modal_dropout(self.modal_dropout_prob, self.text_mask_prob)
+        else:
+            use_struct_mask, use_text_mask = False, False
+
+        # Debug print
+        # print(f"[MASK DEBUG] idx={idx} | struct_mask={use_struct_mask} | text_mask={use_text_mask}")
+
+        # Step 2: Apply structure masking (drop struct)
+        if use_struct_mask and hasattr(data, "x") and data.x is not None:
+            data.x = torch.zeros_like(data.x)
+            # print(f"[MASK DEBUG] Struct masked: {data.x.shape} -> all zeros: {data.x.abs().sum().item()==0}")
+
+
+        # Step 3: Apply text masking (drop text)
+        if use_text_mask:
+            if hasattr(data, "text_emb"):
+                data.text_emb = torch.zeros_like(data.text_emb)
+                # print(f"[MASK DEBUG] Text embedding masked: {data.text_emb.shape} -> all zeros: {data.text_emb.abs().sum().item()==0}")
+
+            else:
+                data.text_masked = "[MASK]"
+                # print("[MASK DEBUG] Text masked at raw input level")
+
+        return data
 
 '''
     def __getitem__(self, idx):

@@ -6,7 +6,7 @@ save_path="/home/yangjw/crystalformer/multimodal_fusion/result/latticeformer/con
 data_root="/home/yangjw/crystalformer/multimodal_fusion/data/crysmmnet_dataset/mp_2018"
 param_json="/home/yangjw/crystalformer/multimodal_fusion/default_fusion.json"
 
-gpu=0
+gpu=2
 targets="e_form"
 exp_name="baseline_mp2018"
 layer=4
@@ -27,8 +27,9 @@ CUDA_VISIBLE_DEVICES=${gpu} python3.10 train_fusion.py -p ${param_json} \
     --text_encoder_name ${text_encoder} \
     --text_encoder_path m3rg-iitd/matscibert \
     --freeze_text_encoder true \
-    --text_mask_prob 0.0 \
-    --struct_mask_prob 0.0 \
+    --text_mask_prob 0.5 \
+    --struct_mask_prob 0.5 \
+    --modal_dropout_prob 0.5 \
     --normalize_targets scale_bias \
     --reproduciblity_state ${reproduciblity_state} \
     --log_every_n_steps 50 \

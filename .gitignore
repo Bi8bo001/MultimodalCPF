@@ -245,3 +245,6 @@ anaconda3/
 .wget-hsts
 .python_history
 .bash_history
+
+data/
+multimodal_fusion/data/

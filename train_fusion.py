@@ -179,6 +179,7 @@ def train():
             use_struct_mask=params.struct_mask_prob > 0,
             freeze_text_encoder=params.freeze_text_encoder,
             fusion_type=params.fusion_type,
+            modal_dropout_prob=params.modal_dropout_prob,  ### mask training strategy
 
             # ...
             )
@@ -253,6 +254,10 @@ def train():
             print(f"[Debug] y: {first_batch.y if hasattr(first_batch, 'y') else 'None'}")
             assert first_batch.x.shape[0] > 0, " Empty training graph! Check if filter or data is broken."
 
+            masked_struct = (first_batch.x.abs().sum(dim=1) == 0).sum().item()
+            masked_text = (first_batch.text_emb.abs().sum(dim=(1, 2)) == 0).sum().item()
+            print(f"[Batch DEBUG] struct masked: {masked_struct}/{len(first_batch.y)}")
+            print(f"[Batch DEBUG] text masked: {masked_text}/{len(first_batch.y)}")
             ## multimodal
             ## check text inserted or not?
             # print(f"text: {first_batch.text if hasattr(first_batch, 'text') else 'No text'}")

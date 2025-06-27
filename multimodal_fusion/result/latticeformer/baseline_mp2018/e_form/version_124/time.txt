@@ -1,0 +1,3 @@
+time-train: 30.7627
+time-val: 1.2225
+time-test: 0.7691
