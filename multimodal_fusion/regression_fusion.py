@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 from pytorch_lightning.core import LightningModule
 import torch.optim as optim
-from losses.regression_loss import regression_loss  # eval as unimodal
+from unimodal.losses.regression_loss import regression_loss  # eval as unimodal
 from models.latticeformer import Latticeformer   # default structure encoder(crystalformer)
 from torch.optim import lr_scheduler
 import numpy
@@ -61,7 +61,7 @@ class RegressionModelFusion(LightningModule):
         ## structure_encoder
         self.structure_encoder = structure_encoder(params)
         
-        ## text_encoder, 默认冻结参数
+        ## text_encoder, by default frozen params
         self.text_encoder = build_text_encoder(params)
         if getattr(params, "freeze_text_encoder", True):  # default frozen
             for param in self.text_encoder.parameters():
