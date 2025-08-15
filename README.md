@@ -9,6 +9,42 @@ This repository documents the initial prototype and conceptual design of **Multi
 
 ---
 
+## 🗂 Directory Structure (Multimodal Components)
+
+This repository is organized to separate unimodal baselines and related external code from all custom multimodal components. Only the **`multimodal_fusion/`** folder and related scripts are **developed from scratch** in this project.
+
+```
+MultimodalCPF/
+├── models/                   # reusable structure encoders (e.g., CrystalFormer, etc.)
+├── related_repo/             # external multimodal frameworks (for reference only)
+├── unimodal/                 # unimodal training pipeline, original dataloaders & configs
+├── multimodal_fusion/        # all custom modules for multimodal modeling
+│   ├── data_processing/          # precompute text & structure representations for fast training
+│   │   ├── precompute_text_embedding.py / .sh
+│   │   ├── precompute_structure_input.py / .sh
+│   │   ├── precompute_text_token.py / .sh
+│   │   ├── precompute_data_list.py / .sh
+│   ├── tools/                   # simple debug and sanity-check scripts
+│   │   ├── debug.py, demo.py, demo.sh
+│   │   └── structure_none.py
+│   ├── dataset_fusion.py        # dataset wrapper for multimodal structure–text input
+│   ├── default_fusion.json      # training config file (can edit fusion type, encoders, loss weights, etc.)
+│   ├── encoder_selector.py      # handles structure encoder selection based on config
+│   ├── fusion_block.py          # pluggable fusion modules: sum / concat / gated / cross-attn
+│   ├── fusion_loss.py           # compute joint loss over fusion + unimodal branches
+│   ├── mask_strategy.py         # apply modality masking & dropout during training
+│   ├── regression_fusion.py     # main multimodal regression model
+│   └── text_encoder.py          # load frozen MatSciBERT as text encoder
+├── utils.py                     # shared utility functions
+├── train_fusion.py              # training script (entry point)
+└── train_fusion.sh              # run script with core hyperparameter settings
+```
+
+> 🔧 Note: Only the following are developed from scratch: `multimodal_fusion/`, `train_fusion.py`, and `train_fusion.sh`.
+> Other folders store original or referenced code for reproducibility.
+
+---
+
 ## 🧠 Motivation
 
 Accurate prediction of crystal properties without costly physical synthesis is critical for accelerating sustainable materials discovery, particularly in areas such as energy storage, catalysis, and green electronics. Deep learning has emerged as a powerful alternative to traditional simulations, but most state-of-the-art models remain **unimodal**, relying solely on structural input. This limits their capacity to capture high-level periodic features like symmetry, long-range atomic interactions, or bonding environments—elements that are often difficult to express through structure alone.
@@ -65,5 +101,4 @@ If you're working on related topics or interested in extending this direction (e
 
 > 📩 Email: jingwen.yang@connect.polyu.hk  
 > 💬 WeChat: 18981991005
-
 
