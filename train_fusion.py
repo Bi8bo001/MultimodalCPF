@@ -302,7 +302,7 @@ def train():
     # test_dataset.process()
 
     #* Setup model and trainer
-    ## logger (tensorBoard) 记录日志
+    ## logger (tensorBoard)
     logger = loggers.TensorBoardLogger(params.save_path, name=params.experiment_name, default_hp_metric=False)
     logger.log_hyperparams(params.__dict__, \
         {"hp/val": 1.0, "hp/avr50":1.0, "hp/min_avr50":1.0, "hp/min":1.0, "hp/mean_min10": 1.0}
@@ -319,7 +319,7 @@ def train():
     ## model initialization
 
     ### multimodal: add StructureEncoder
-    ### fusion则import新的regression framework, 也设置成一样的名字让改动最小, 前面根据fusion_type选择import哪一个
+    ### fusion -> import new regression framework (name as the same as unimodal)
     if params.fusion_type == "none":
         from models.regression import RegressionModel
         system = RegressionModel(params, train_loader, val_loader)
@@ -352,7 +352,7 @@ def train():
     # initialize mean and std values in crystalformer by forwarding once. 
     ## initialize encoder
 
-    ## multimodal: 只有crystalformer + ddp 才需要
+    ## multimodal: only crystalformer + ddp need
     if ddp and params.encoder_name == "latticeformer":
         with torch.no_grad():
             import random
@@ -367,7 +367,7 @@ def train():
 
     # ckpt loading
 
-    ### multimodal 每个模态都可能有可能有不同的pretrained的model
+    ### multimodal: diverse pretrained model for each encoder
     ## 1. multimodal model ckpt(cross-attention/gated + 2 encoders + prediction head...)
     if params.pretrained_model is not None:
         # lightning only
@@ -412,7 +412,7 @@ def train():
         )
 
     
-    ## trainning + time recording(crystalformer主打的耗时少)
+    ## trainning + time recording
     ### 
     import time
     time_dict = {}

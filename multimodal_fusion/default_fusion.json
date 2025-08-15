@@ -1,7 +1,7 @@
 {
     "seed": 123,
     "experiment_name": "baseline",
-    "save_path": "/home/yangjw/crystalformer/multimodal_fusion/result/latticeformer",
+    "save_path": "multimodal_fusion/result/latticeformer",
     "optimizer": "adamw",
     "lr": 0.0005,
     "lr_sch": "inverse_sqrt_nowarmup",

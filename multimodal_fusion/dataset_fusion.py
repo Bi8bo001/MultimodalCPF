@@ -16,7 +16,7 @@ from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifParser
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
-from dataloaders.common import generate_site_species_vector
+from unimodal.dataloaders.common import generate_site_species_vector
 from torch.nn.utils.rnn import pad_sequence  ## cross_attn
 
 from multimodal_fusion.mask_strategy import apply_modal_dropout  ### mask training strategy
