@@ -248,3 +248,9 @@ anaconda3/
 
 data/
 multimodal_fusion/data/
+result/
+logs/
+outputs/
+checkpoints/
+github/
+multimodal_fusion/result
