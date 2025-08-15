@@ -38,22 +38,20 @@ This project proposes a general and interpretable multimodal framework compatibl
 
 ## 🔧 Methodology Overview
 
-**Encoders**
+**Model Components (Encoders & Fusion)**  
 - **Structure encoder**: Transformer-based (e.g., CrystalFormer) for periodic structure encoding.  
-- **Text encoder**: Frozen **MatSciBERT** to capture high-level semantic cues (space group, bonding environment, etc.).
+- **Text encoder**: Frozen **MatSciBERT** to capture high-level semantic cues such as space group and bonding environment.  
+- **Fusion module**: Supports pluggable strategies including **sum**, **concat**, **gated fusion**, and **cross-attention** for token-level structure–text integration.
 
-**Fusion**
-- Modular choices: **sum**, **concat**, **gated fusion**, **cross-attention** (token-level structure–text interaction).
+**Training Strategy**  
+- **Joint loss** across fusion and unimodal branches to stabilize cross-modal alignment.  
+- **Modality masking/dropout** to simulate missing-modality scenarios and enhance robustness.  
+- **Semantic text augmentation** using Robocrystallographer + paraphrasing to enrich textual input.
 
-**Training Strategy**
-- **Joint loss** over fusion and unimodal branches to stabilize cross-modal alignment.  
-- **Modality masking/dropout** to simulate missing-modality scenarios and improve robustness.  
-- **Text augmentation** (e.g., Robocrystallographer + paraphrasing) to diversify semantics.
-
-**Interpretability Suite**
-- Token-level **attention visualization**.  
-- **Token/region ablation** (e.g., global vs. local text segments).  
-- **Modality masking** to quantify semantic contributions.
+**Interpretability Suite**  
+- Token-level **attention visualization** to trace model focus.  
+- **Token/region ablation** to assess contribution of different text components (e.g., global vs. local).  
+- **Modality masking** to quantify modality-specific contributions to prediction.
 
 ---
 
