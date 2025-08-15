@@ -16,7 +16,7 @@ from dataloaders.common import filter_by_atom_num
 from functools import partial  # frozen params
 from distutils.util import strtobool
 
-### multimodal 这个动态import在底下
+### multimodal dynamic import
 from multimodal_fusion.regression_fusion import RegressionModelFusion as RegressionModel
 from multimodal_fusion.encoder_selector import get_dataset_and_encoder
 # from multimodal_fusion.dataset_fusion import collate_fn_fusion_tokenlevel

@@ -1,5 +1,5 @@
-### 先只根据modal_dropout_prob和text_mask_prob，
-# 但是struct_mask_probxian先继续保留
+### currently only uses modal_dropout_prob and text_mask_prob
+# struct_mask_prob is still preserved but not active
 
 import random
 

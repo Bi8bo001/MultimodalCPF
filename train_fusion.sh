@@ -1,10 +1,10 @@
 #!/usr/bin/bash
 
 # path
-save_path="/home/yangjw/crystalformer/multimodal_fusion/result/latticeformer/concat"
-# save_path="/home/yangjw/crystalformer/multimodal_fusion/result/latticeformer"
-data_root="/home/yangjw/crystalformer/multimodal_fusion/data/crysmmnet_dataset/mp_2018"
-param_json="/home/yangjw/crystalformer/multimodal_fusion/default_fusion.json"
+save_path="multimodal_fusion/result/latticeformer/concat"
+# save_path="multimodal_fusion/result/latticeformer"
+data_root="multimodal_fusion/data/crysmmnet_dataset/mp_2018"
+param_json="multimodal_fusion/default_fusion.json"
 
 gpu=2
 targets="e_form"

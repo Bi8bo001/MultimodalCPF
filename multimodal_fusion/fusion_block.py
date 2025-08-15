@@ -1,6 +1,7 @@
 
-## 暂定 sum/average/concat/gated fusion/cross_attention
-### 需要注意不同的输入输出的size等等
+## temporarily supports sum / average / concat / gated fusion / cross_attention
+## note: different fusion types require compatible input/output sizes
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

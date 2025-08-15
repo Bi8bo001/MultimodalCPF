@@ -47,14 +47,8 @@ class Params():
 # for analysis embeddings
 def search_kNN(embedding_query, embedding_target, use_gpu=True, k=10):
     import faiss
-    """
-    embeddingはtensorなどarray-like、kは探す近傍点の個数（1以上のint）
-    return:
-        D: クエリベクトルからk近傍までの距離
-        I: クエリベクトルに対するk近傍のインデックス
-    """
-    vec_dim = embedding_target.shape[1]                   # ベクトルの次元(dimension)
-    n_data = embedding_target.shape[0]                    # データベースのサイズ(database size)
+    vec_dim = embedding_target.shape[1]                   # dimension
+    n_data = embedding_target.shape[0]                    # database size
     x_target_vec = embedding_target.numpy().astype('float32')
     x_query_vec = embedding_query.numpy().astype('float32')
     faiss_index_cpu = faiss.IndexFlatL2(vec_dim)
@@ -68,12 +62,11 @@ def search_kNN(embedding_query, embedding_target, use_gpu=True, k=10):
     return D, I
 
 def calc_grobal_top_k_acc(embedding_query, embedding_target, k=10):
-    # top-k accを計算
+    # top-k acc
     top_k_correct_samplenums = []
     top_k_acc = []
-    n_data = embedding_target.shape[0]                    # データベースのサイズ(database size)
+    n_data = embedding_target.shape[0]                    # database size
     for i in range(k):
-        # k近傍のインデックスのarray内にクエリベクトル自身が入っていればok
         correct_samplenum = get_bool_of_corrected_predictions(embedding_query=embedding_query, 
                                                               embedding_target=embedding_target, 
                                                               k=i+1).sum() 
@@ -89,25 +82,6 @@ def get_bool_of_corrected_predictions(embedding_query, embedding_target, k=10):
     return is_predict_correctly
 
 def retrieve_materials_properties(metadata, torch_dataset):
-    """
-    metadata: 材料ごとのメタデータのdictをlistに入れたもの
-    torch_dataset: metadataと突き合わせるためのPyTorchのdataset object
-    metadataとtorch_datasetの中身の順番は一致していないといけない
-    
-    metadata dictの例：
-    {'material_id': 'mp-1025051',
-     'pretty_formula': 'YbB2Rh3',
-     'energy_per_atom': -6.870412148333333,
-     'energy': -41.22247289,
-     'density': 10.61234910722115,
-     'final_structure': Structure Summary
-     （中略）
-     'spacegroup.number': 191,
-     'band_gap': 0.0,
-     'formation_energy_per_atom': -0.7159613472222226,
-     'total_magnetization': 0.0005206,
-     'xrd_hist': array([0., 0., 0., ..., 0., 0., 0.])}
-    """
     pretty_formula = []
     energy_per_atom = []
     energy = []
@@ -174,26 +148,6 @@ def plot_embedding(tsne_embedding_xrd, tsne_embedding_crystal, value_for_color, 
         fig.suptitle(color_key, fontsize='large')
 
 def retrieve_neighbour_materials(query_mp_id, embedding, embedding_metadata, n_neighbours=1000, use_gpu=True):
-    """
-    ある物質のembeddingについて近傍の物質を検索して可視化する
-
-    Parameters
-    ----------
-    query_mp_id: str
-        クエリする物質のmp_id (e.g. mp-764)
-        
-    embedding: array-like
-        検索対象のembeddingのtensorやarray
-
-    Returns
-    -------
-    retrieved_neighbours : pd.DataFrame
-        クエリ近傍の物質のメタデータのdataframe
-        
-    disp: ipywidgets.widgets.widget_box.HBox
-        クエリ近傍の物質の結晶構造を可視化するNGL Viewerのipython widget
-        
-    """
     idx = embedding_metadata.query('mp_id == @query_mp_id').index[0]
     D, I = search_kNN(embedding_query=embedding[idx].unsqueeze(0), embedding_target=embedding, k=n_neighbours, use_gpu=use_gpu)
     retrieved_neighbours = embedding_metadata.iloc[I.squeeze()]

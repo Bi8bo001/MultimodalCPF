@@ -16,8 +16,9 @@ Returns:
     Tensor: Final loss value for each sample (B,)
 """
 
-## 模型训练时候的loss是多个encoder加权后的loss
-## 实际上测试的loss还是标准的mae等等
+# loss used during training is a weighted combination of multiple branches (fusion + struct + text)
+# note: evaluation still uses standard metrics like MAE
+
 import torch
 import torch.nn.functional as F
 
@@ -60,7 +61,7 @@ def fusion_regression_loss(
     #     return loss
 
 
-    ### 函数内部先统一成cross_attn的格式 输出还是[B] 不影响其他file
+    # unify prediction shape for compatibility with cross-attn style; output shape [B], doesn't affect other files
     def compute_loss(pred: torch.Tensor, data, name: str):
         B = pred.shape[0]
         loss = 0

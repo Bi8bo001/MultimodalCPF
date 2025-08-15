@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 from pytorch_lightning.core import LightningModule
 import torch.optim as optim
-from losses.regression_loss import regression_loss  # eval还是用的原版
+from losses.regression_loss import regression_loss  # eval as unimodal
 from models.latticeformer import Latticeformer   # default structure encoder(crystalformer)
 from torch.optim import lr_scheduler
 import numpy
@@ -21,10 +21,10 @@ from multimodal_fusion.fusion_block import FusionBlock
 from multimodal_fusion.fusion_loss import fusion_regression_loss
 from torch_scatter import scatter_mean
 
-# ... 还有需要替换的structure encoder 也需要import
+# ... also need to import structure encoder if replacing it
 
 
-class AvgFn:  # for SWAmodel, 可以自定义params (如何取avg，多少取avg...)
+class AvgFn:  # for swa model; allows custom averaging behavior (e.g., how and when to update parameters)
     def __call__(self, averaged_model_parameter, model_parameter, num_averaged):
         return averaged_model_parameter + \
             (model_parameter - averaged_model_parameter) / (num_averaged + 1)
@@ -101,7 +101,7 @@ class RegressionModelFusion(LightningModule):
         self.register_buffer('target_std', target_std)
 
 
-        # swa 暂时先不管
+        # swa ignore
         self.swa_epochs = getattr(params, "swa_epochs", 0)
         if self.swa_epochs > 0:
             #* In DDP, classes can't have function pointers as members, so define avg_fn as a class.
@@ -133,7 +133,7 @@ class RegressionModelFusion(LightningModule):
             modules.append(self.text_encoder)
         return modules
 
-    # swa 这2个function先不用管
+    # ignore these swa-related functions for now
     def enable_average_model(self, logging_key:str=None) -> bool:
         if self.swa_model is not None:
             self.logging_key = logging_key
@@ -146,8 +146,9 @@ class RegressionModelFusion(LightningModule):
         self.use_average_model = False
     
     '''
-    # target normalization
-    ## 因为不同target的范围值不一样 需要通过normalization让target都在同一个scale 从而让loss也在同一个scale 尤其是在有多个target的时候
+    # normalize targets to the same scale since different targets may have different value ranges
+    # this ensures loss is balanced across targets, especially in multi-task settings
+
     def update_target_normalizers(self):
         all_targets = []
         
@@ -237,7 +238,7 @@ class RegressionModelFusion(LightningModule):
 
         # print(f"[Forward] batch.text_emb shape: {getattr(batch, 'text_emb', None).shape}")
 
-        # batch 的 text_emb（pooled/token-level）
+        # batch text_emb（pooled/token-level）
         if self.params.freeze_text_encoder:
             if not hasattr(batch, "text_emb"):
                 raise ValueError("freeze_text_encoder=True but text_emb not found in batch! Check Dataset + DataLoader.")
@@ -245,7 +246,7 @@ class RegressionModelFusion(LightningModule):
         else:
             text_emb = self.text_encoder(batch.text)  # will return token or pooled depending on setting
 
-        # pooled-level 才做 mean pooling
+        # pooled-level mean pooling only
         if self.params.fusion_type in ["concat", "sum", "gated"]:
             # [B, L, D] -> [B, D]
             if text_emb.dim() == 3:
@@ -293,18 +294,18 @@ class RegressionModelFusion(LightningModule):
     def test_step(self, batch, batch_idx):
         return self.validation_step(batch, batch_idx)
 
-    # pytorch lightning training的接口 每个miini-batch调用一次
+    # pytorch lightning training step
     def training_step(self, batch, batch_idx):
         # print("⚠️⚠️ training_step batch.text_emb shape:", getattr(batch, "text_emb", None).shape)
         # optimizer setting & gradient initialized as zero
 
-        opt = self.optimizers()  # 获得当前的optimizer
-        opt.zero_grad()  # 清理旧的梯度 归零
+        opt = self.optimizers()  # current optimizer
+        opt.zero_grad()  # zero grad
  
         # batchNorm(BN layer) frozen
-        ## norm_type可以设置为 'ln' 'bn' 'no' ...如果是batchnorm才适用
+        ## norm_type could be set as 'ln' 'bn' 'no' ...if batchnorm
         freeze_bn_epochs = getattr(self.params, 'freeze_bn_epochs', 0)
-        ## infer的时候用前期稳定的 BN，防止后面batch size变小不稳定
+        ## for stable training, freeze BN in the last 'freeze_bn_epochs' epochs
         if self.current_epoch + freeze_bn_epochs >= self.params.n_epochs:  # 倒数的'freeze_bn_epochs'个epoch都结BN, enter frozen epoch
             for m in self.structure_encoder.modules():
                 if isinstance(m, (nn.BatchNorm1d, nn.SyncBatchNorm)):
@@ -336,7 +337,7 @@ class RegressionModelFusion(LightningModule):
         # backpropogation
         self.manual_backward(loss)
 
-        if self.clip_norm > 0:  # 防止gradient爆炸
+        if self.clip_norm > 0:  # prevent gradient exploding
             total_norm = nn.utils.clip_grad.clip_grad_norm_(self.get_trainable_parameters(), self.clip_norm)
             self.log('train/total_norm', total_norm, on_step=False, on_epoch=True,
                      prog_bar=False, logger=True, batch_size=batch.batch_size if hasattr(batch, 'batch_size') else None)
@@ -368,7 +369,7 @@ class RegressionModelFusion(LightningModule):
         return {'loss': loss}
 
     # update param of BN in swa model
-    ## swa相关的暂时都不管
+    ## swa
     def on_train_end(self):
         print("Updating BNs for Stochastic Weight Averaging")
         device = self.swa_model.parameters().__next__().device
@@ -378,7 +379,7 @@ class RegressionModelFusion(LightningModule):
     def validation_step(self, batch, batch_idx):
         fusion_pred, _, _ = self.forward(batch)
 
-        # 这里的loss就是validation部分测试mae等等的loss，只有training部分的loss需要改变
+        # this is the standard loss used for validation (e.g., MAE); only training loss is customized
         loss = regression_loss(
             fusion_pred, 
             batch, 
@@ -401,7 +402,7 @@ class RegressionModelFusion(LightningModule):
         self.validation_step_outputs.append(outputs)
         return outputs
 
-    # 完成validation之后的callback
+    # callback after validation epoch ends
     def on_validation_epoch_end(self):
         outputs = self.validation_step_outputs
         if len(outputs)==0:
@@ -415,7 +416,7 @@ class RegressionModelFusion(LightningModule):
         self.log(f'{logging_key}/loss', avg_loss, prog_bar=True)
         print(f"\n[Epoch {self.current_epoch}] {logging_key}/loss: {avg_loss:.4f}  ", end='')
         
-        # 按target dim record mae
+        # target dim record mae
         for t in self.targets:
             if all(t in x for x in outputs):
                 mae = torch.cat([x[t] for x in outputs], dim=0).mean()

@@ -12,7 +12,7 @@ class MatSciBERTEncoder(nn.Module):
         model_path: str, 
         output_dim: int, 
         dropout: float = 0.1,
-        use_token_output: bool = False  ## 根据cross-attn判断是否token-level
+        use_token_output: bool = False  ## cross-attn -> whether token-level
     ):
         super().__init__()
         self.use_token_output = use_token_output
@@ -52,7 +52,7 @@ class MatSciBERTEncoder(nn.Module):
             output = self.model(**encodings).last_hidden_state  # [B, L, H]
             projected = self.projection(output)  # [B, L, D]
 
-        ### 根据是否cross-attn决定输出维度
+        ### cross-attn -> determine dim
         if self.use_token_output:
             return projected  # [B, L, D]
         else:  # embedding
