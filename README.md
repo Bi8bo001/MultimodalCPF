@@ -5,7 +5,7 @@
 
 > Early-stage research exploration (Apr–Jun 2025), independently designed and implemented by **Jingwen Yang** under supervision of **Prof. Wanyu Lin** and **Haowei Hua (PhD student)**.  
 
-This repository documents the initial prototype and conceptual design of a general-purpose **transformer-based multimodal framework** for **crystal property prediction**. Although the project was not pursued further temporarily, it substantially shaped my subsequent work on structure–text fusion, interpretability, and training strategy design in scientific machine learning. The narrative below is adapted from an extended abstract written during the project.
+This repository documents the initial prototype and conceptual design of **MultimodalCPF** — a general-purpose transformer-based framework for multimodal **crystal property prediction**. Although the project was not pursued further temporarily, it substantially shaped my subsequent work on structure–text fusion, interpretability, and training strategy design in scientific machine learning. The narrative below is adapted from an extended abstract written during the project.
 
 ---
 
