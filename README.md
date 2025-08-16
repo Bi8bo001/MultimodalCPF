@@ -11,7 +11,7 @@ This repository documents the initial prototype and conceptual design of **Multi
 
 ## 🗂 Directory Structure (Multimodal Components)
 
-This repository is organized to separate unimodal baselines and related external code from all custom multimodal components. Only the **`multimodal_fusion/`** folder and related scripts are **developed from scratch** in this project.
+This repository is organized to separate unimodal baselines and related external code from all custom multimodal components.
 
 ```
 MultimodalCPF/
